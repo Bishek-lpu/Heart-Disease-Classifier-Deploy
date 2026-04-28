@@ -28,6 +28,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # noqa: E40
 # -------------------------------
 cnn_model = tf.keras.models.load_model("heart_ecg_cnn.h5")
 ml_model = joblib.load("heart_model.pkl")
+scaler = joblib.load("scaler.pkl")
 
 classes = ["Normal", "MI", "History_MI", "Abnormal"]
 
