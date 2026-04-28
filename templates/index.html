@@ -6,6 +6,8 @@
     <title>Cardio Risk Assistant AI</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Prevent flash of wrong theme -->
+    <script>(function(){var t=localStorage.getItem('cardio-theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
 <body>
     <div class="app-container">
@@ -249,9 +251,11 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>
     <script src="/static/app.js"></script>
+    <script src="/static/theme.js"></script>
 </body>
 </html>

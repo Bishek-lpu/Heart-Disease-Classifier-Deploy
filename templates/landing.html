@@ -6,12 +6,20 @@
     <title>Cardio Risk Assistant AI- Welcome</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/landing.css">
+    <!-- Prevent flash of wrong theme -->
+    <script>(function(){var t=localStorage.getItem('cardio-theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);})();</script>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-content">
             <div class="logo">Cardio Risk Assistant AI 🫀</div>
-            <a href="/app" class="btn outline-glow nav-btn">Launch App</a>
+            <div class="nav-right">
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <a href="/app" class="btn outline-glow nav-btn">Launch App</a>
+            </div>
         </div>
     </nav>
 
@@ -84,5 +92,6 @@
     <footer class="footer">
         <p>Disclaimer: This is an educational tool and does not provide medical diagnoses.</p>
     </footer>
+    <script src="/static/theme.js"></script>
 </body>
 </html>
