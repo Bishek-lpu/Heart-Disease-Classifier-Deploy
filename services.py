@@ -2,44 +2,12 @@ import os
 import warnings
 import logging
 
-# ── Silence any lingering library noise ──────────────────────────────────────
 warnings.filterwarnings("ignore", category=UserWarning)
 logging.getLogger("absl").setLevel(logging.ERROR)
 
-import numpy as np  # noqa: E402
-import cv2  # noqa: E402
-import joblib  # noqa: E402
-import onnxruntime as ort  # noqa: E402
-from openai import OpenAI  # noqa: E402
-from io import BytesIO  # noqa: E402
-from scipy.signal import find_peaks  # noqa: E402
-from datetime import datetime  # noqa: E402
-from reportlab.lib import colors  # noqa: E402
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # noqa: E402
-from reportlab.lib.units import inch  # noqa: E402
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # noqa: E402
+import numpy as np  # always needed, fast
 
-# ── ONNX Runtime session options (CPU, single-threaded for small containers) ──
-_sess_opts = ort.SessionOptions()
-_sess_opts.intra_op_num_threads = 2
-_sess_opts.inter_op_num_threads = 2
-_sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-
-# ── Load models ───────────────────────────────────────────────────────────────
-_ONNX_MODEL_PATH = os.path.join(os.path.dirname(__file__), "heart_ecg_cnn.onnx")
-_cnn_session = ort.InferenceSession(
-    _ONNX_MODEL_PATH,
-    sess_options=_sess_opts,
-    providers=["CPUExecutionProvider"],
-)
-_cnn_input_name = _cnn_session.get_inputs()[0].name
-
-ml_model = joblib.load(os.path.join(os.path.dirname(__file__), "heart_model.pkl"))
-scaler = joblib.load(os.path.join(os.path.dirname(__file__), "scaler.pkl"))
-
-# ── Constants ─────────────────────────────────────────────────────────────────
-classes = ["Normal", "MI", "History_MI", "Abnormal"]
-
+# ── Constants (no heavy libs needed) ─────────────────────────────────────────
 CLINICAL_FEATURE_COLS = [
     "age",
     "sex",
@@ -60,10 +28,68 @@ CLINICAL_FEATURE_COLS = [
     "age_chol_interaction",
     "oldpeak_log",
 ]
+_ECG_CLASSES = ["Normal", "MI", "History_MI", "Abnormal"]
+
+# ── Lazy singletons ───────────────────────────────────────────────────────────
+# Each is loaded once on first use, never at import time.
+_cnn_session = None
+_cnn_input_name = None
+_ml_model = None
+_scaler = None
 
 
-# ── AI suggestion ─────────────────────────────────────────────────────────────
+def _get_cnn():
+    global _cnn_session, _cnn_input_name
+    if _cnn_session is None:
+        import onnxruntime as ort  # ~30 MB, deferred
+
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = 2
+        opts.inter_op_num_threads = 2
+        opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        path = os.path.join(os.path.dirname(__file__), "heart_ecg_cnn.onnx")
+        _cnn_session = ort.InferenceSession(
+            path, sess_options=opts, providers=["CPUExecutionProvider"]
+        )
+        _cnn_input_name = _cnn_session.get_inputs()[0].name
+    return _cnn_session, _cnn_input_name
+
+
+def _get_ml_models():
+    global _ml_model, _scaler
+    if _ml_model is None:
+        import joblib  # fast, but still deferred
+
+        base = os.path.dirname(__file__)
+        _ml_model = joblib.load(os.path.join(base, "heart_model.pkl"))
+        _scaler = joblib.load(os.path.join(base, "scaler.pkl"))
+    return _ml_model, _scaler
+
+
+# Public aliases used by app.py
+@property
+def ml_model(_):  # noqa – accessed via module-level helper below
+    return _get_ml_models()[0]
+
+
+@property
+def scaler(_):
+    return _get_ml_models()[1]
+
+
+# Simpler: just expose getter functions app.py can call
+def get_ml_model():
+    return _get_ml_models()[0]
+
+
+def get_scaler():
+    return _get_ml_models()[1]
+
+
+# ── AI suggestion (lazy-loads openai) ─────────────────────────────────────────
 def get_ai_suggestion(input_type, data, result):
+    from openai import OpenAI  # deferred: network client + httpx etc.
+
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     prompt = f"""
     You are an experienced cardiologist AI assistant. A patient has undergone heart disease analysis.
@@ -93,6 +119,7 @@ def get_ai_suggestion(input_type, data, result):
 
 # ── Clinical helpers ──────────────────────────────────────────────────────────
 def clinical_risk_percent_and_tier(input_scaled):
+    ml_model, _ = _get_ml_models()
     try:
         if hasattr(ml_model, "predict_proba"):
             p = ml_model.predict_proba(input_scaled)[0]
@@ -130,8 +157,10 @@ def contributing_factors(age, sex, trestbps, chol, thalach, exang, oldpeak, cp):
     return f[:5]
 
 
-# ── Image / ECG helpers ───────────────────────────────────────────────────────
+# ── Image / ECG helpers (lazy-loads cv2) ─────────────────────────────────────
 def preprocess_image(img):
+    import cv2  # deferred: libopencv loads ~20 shared libs
+
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = img / 255.0
     img = cv2.resize(img, (240, 200))
@@ -139,23 +168,24 @@ def preprocess_image(img):
 
 
 def predict_cnn(img):
-    """Run inference via ONNX Runtime (no TensorFlow required)."""
-    # Shape: (1, 200, 240, 1), dtype float32
+    session, input_name = _get_cnn()
     cnn_input = img.reshape(1, 200, 240, 1).astype(np.float32)
-    outputs = _cnn_session.run(None, {_cnn_input_name: cnn_input})
-    pred = outputs[0]  # shape (1, num_classes)
+    outputs = session.run(None, {input_name: cnn_input})
+    pred = outputs[0]
     class_id = int(np.argmax(pred))
-    return classes[class_id], float(np.max(pred))
+    return _ECG_CLASSES[class_id], float(np.max(pred))
 
 
 def waveform_analysis(img):
+    from scipy.signal import find_peaks  # deferred: scipy is large
+
     wave = np.mean(img, axis=0)
     wave = (wave - wave.min()) / (wave.max() - wave.min() + 1e-8)
     peaks, _ = find_peaks(wave, distance=20)
     return wave.tolist(), peaks.tolist(), len(peaks) * 6, float(np.std(wave))
 
 
-# ── PDF report ────────────────────────────────────────────────────────────────
+# ── PDF report (lazy-loads reportlab) ────────────────────────────────────────
 def _escape(s: str) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -163,6 +193,14 @@ def _escape(s: str) -> str:
 def generate_report_pdf(
     title, mode_label, input_block, result_block, ai_text, contact_info=""
 ):
+    # reportlab deferred: large pure-Python package, only needed for /api/report
+    from io import BytesIO
+    from datetime import datetime
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+
     buffer = BytesIO()
     doc = SimpleDocTemplate(
         buffer, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50
