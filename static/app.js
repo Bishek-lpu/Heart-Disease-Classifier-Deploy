@@ -63,15 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.getElementById('c-ai-brief').innerHTML = formatAIText(result.suggestion);
                 
-                const cContactDiv = document.getElementById('c-contact');
-                if (result.risk_tier === 'Medium' || result.risk_tier === 'High') {
-                    cContactDiv.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> <div><strong>Urgent: Specialist Consultation Recommended</strong><br>Contact Dr. Jane Smith (Cardiology Dept)<br>Phone: 1-800-555-0199 | Emergency: 911</div>';
-                    cContactDiv.classList.remove('hidden');
-                    clinicalDataState.contact_info = "Dr. Jane Smith (Cardiology Dept) | Phone: 1-800-555-0199 | Emergency: 911";
-                } else {
-                    cContactDiv.classList.add('hidden');
-                    clinicalDataState.contact_info = "";
-                }
+
 
                 document.getElementById('clinical-loading').classList.add('hidden');
                 document.getElementById('clinical-results').classList.remove('hidden');
@@ -179,15 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.getElementById('e-ai-brief').innerHTML = formatAIText(result.suggestion);
                 
-                const eContactDiv = document.getElementById('e-contact');
-                if (['MI', 'Abnormal'].includes(result.label)) {
-                    eContactDiv.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> <div><strong>Urgent: Specialist Consultation Recommended</strong><br>Contact Dr. Jane Smith (Cardiology Dept)<br>Phone: 1-800-555-0199 | Emergency: 911</div>';
-                    eContactDiv.classList.remove('hidden');
-                    ecgDataState.contact_info = "Dr. Jane Smith (Cardiology Dept) | Phone: 1-800-555-0199 | Emergency: 911";
-                } else {
-                    eContactDiv.classList.add('hidden');
-                    ecgDataState.contact_info = "";
-                }
+
 
                 document.getElementById('ecg-loading').classList.add('hidden');
                 document.getElementById('ecg-results').classList.remove('hidden');

@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cardio Risk Assistant</title>
+    <title>Cardio Risk Assistant AI</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <header class="cl-header" style="position: relative;">
-            <a href="/" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: var(--text-muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Home</a>
-            <h1 class="cl-title">Cardio Risk Assistant <span class="glow-icon">🫀</span></h1>
+        <header class="cl-header">
+            <a href="/" class="back-link">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Home
+            </a>
+            <h1 class="cl-title">Cardio Risk Assistant AI <span class="glow-icon">🫀</span></h1>
             <p class="cl-sub">Not a medical diagnosis — for educational and decision-support use only.</p>
         </header>
 
@@ -160,7 +163,6 @@
                                 </details>
                             </div>
                             
-                            <div id="c-contact" class="hidden alert-box error" style="margin-top: 1.5rem;"></div>
 
                             <button id="c-download" class="btn secondary outline-glow">Download PDF Report</button>
                         </div>
@@ -197,7 +199,7 @@
                         <h2>Analysis Results</h2>
                         <div id="ecg-loading" class="hidden loading-container">
                             <div class="spinner"></div>
-                            <p>Running CNN inference & OpenAI analysis...</p>
+                            <p>Running CNN inference & LLM model analysis...</p>
                         </div>
                         <div id="ecg-results" class="hidden">
                             <div class="metrics-row">
@@ -237,7 +239,6 @@
                                 </details>
                             </div>
                             
-                            <div id="e-contact" class="hidden alert-box error" style="margin-top: 1.5rem;"></div>
 
                             <button id="e-download" class="btn secondary outline-glow">Download PDF Report</button>
                         </div>

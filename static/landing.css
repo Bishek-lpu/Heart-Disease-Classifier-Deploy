@@ -215,11 +215,44 @@ body {
 /* Footer */
 .footer { padding: 2rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); color: var(--text-muted); font-size: 0.85rem; }
 
+/* ── Responsive ─────────────────────────────────────── */
+
+/* Tablet (≤ 900px) */
 @media (max-width: 900px) {
-    .hero { flex-direction: column; text-align: center; padding: 4rem 1.5rem; }
+    .hero { flex-direction: column; text-align: center; padding: 5rem 1.5rem 4rem; min-height: auto; }
     .hero-title { font-size: 3rem; }
-    .hero-actions { justify-content: center; }
-    .hero-visual { margin-top: 4rem; }
+    .hero-actions { justify-content: center; flex-wrap: wrap; }
+    .hero-visual { margin-top: 3rem; width: 100%; }
+    .hero-heart-img { max-width: 340px; }
+    .overlay-card { right: 0; bottom: -10px; }
+
     .split-layout { grid-template-columns: 1fr; gap: 2rem; }
-    .feature-grid { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Mobile (≤ 640px) */
+@media (max-width: 640px) {
+    body { background-attachment: scroll; }
+
+    .nav-content { padding: 0 1rem; }
+    .logo { font-size: 1rem; }
+    .nav-btn { padding: 0.4rem 0.85rem; font-size: 0.82rem; }
+
+    .hero { padding: 3.5rem 1rem 3rem; gap: 2rem; }
+    .hero-title { font-size: 2.1rem; letter-spacing: -0.03em; }
+    .hero-subtitle { font-size: 1rem; margin-bottom: 1.75rem; }
+    .hero-actions { flex-direction: column; align-items: center; gap: 0.75rem; }
+    .hero-actions .btn { width: 100%; max-width: 320px; }
+    .hero-visual { margin-top: 0; }
+    .hero-heart-img { max-width: 260px; }
+    .overlay-card { display: none; } /* hide float card on small screens */
+
+    .problem-solution { padding: 3.5rem 0; }
+    .problem h2, .solution h2 { font-size: 1.5rem; }
+    .problem p, .solution p { font-size: 0.95rem; }
+
+    .features { padding: 3.5rem 0; }
+    .section-title { font-size: 1.75rem; margin-bottom: 2rem; }
+    .feature-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .feature-card { padding: 1.75rem 1.25rem; }
 }
