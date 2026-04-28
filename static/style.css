@@ -46,7 +46,9 @@ body {
     margin-bottom: 0.5rem;
     background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 .glow-icon { filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.8)); }
