@@ -175,6 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('e-hr').textContent = result.hr;
                 document.getElementById('e-var').textContent = result.var.toFixed(4);
 
+                drawECGChart(result.wave, result.peaks);
+
                 document.getElementById('e-ai-brief').innerHTML = formatAIText(result.suggestion);
                 
                 const eContactDiv = document.getElementById('e-contact');
@@ -246,4 +248,111 @@ document.addEventListener('DOMContentLoaded', () => {
         formatted = formatted.replace(/\n/g, '<br>');
         return formatted;
     }
+
+    // ── ECG paper-style chart ─────────────────────────────────────────────────
+    function drawECGChart(wave, peaks) {
+        const canvas = document.getElementById('ecg-waveform-canvas');
+        if (!canvas) return;
+
+        // Size canvas to its CSS display size for sharp rendering
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const W = Math.round(rect.width  || canvas.offsetWidth  || 600);
+        const H = Math.round(rect.height || canvas.offsetHeight || 140);
+        canvas.width  = W * dpr;
+        canvas.height = H * dpr;
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+
+        // ── Background: dark warm red-tinted ──
+        ctx.fillStyle = '#1a0a0a';
+        ctx.fillRect(0, 0, W, H);
+
+        // ── ECG paper grid ──
+        const smallCell = 8;   // small square (1 mm equivalent)
+        const largeCell = smallCell * 5; // large square (5 mm equivalent)
+
+        // Small grid lines
+        ctx.strokeStyle = 'rgba(180, 40, 40, 0.22)';
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x < W; x += smallCell) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        }
+        for (let y = 0; y < H; y += smallCell) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+
+        // Large grid lines
+        ctx.strokeStyle = 'rgba(210, 60, 60, 0.42)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += largeCell) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        }
+        for (let y = 0; y < H; y += largeCell) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+
+        if (!wave || wave.length < 2) return;
+
+        // ── Map waveform data → canvas coords ──
+        const pad = { top: 12, bottom: 12 };
+        const plotH = H - pad.top - pad.bottom;
+        const n = wave.length;
+
+        function xAt(i) { return (i / (n - 1)) * W; }
+        // Flip: signal=1 → top, signal=0 → bottom
+        function yAt(v) { return pad.top + (1 - v) * plotH; }
+
+        // ── Waveform glow pass (wider, semi-transparent) ──
+        ctx.beginPath();
+        ctx.moveTo(xAt(0), yAt(wave[0]));
+        for (let i = 1; i < n; i++) ctx.lineTo(xAt(i), yAt(wave[i]));
+        ctx.strokeStyle = 'rgba(13, 148, 136, 0.28)';
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // ── Waveform main line ──
+        ctx.beginPath();
+        ctx.moveTo(xAt(0), yAt(wave[0]));
+        for (let i = 1; i < n; i++) ctx.lineTo(xAt(i), yAt(wave[i]));
+        ctx.strokeStyle = '#0d9488';
+        ctx.lineWidth = 1.5;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // ── R-peak markers ──
+        if (peaks && peaks.length) {
+            peaks.forEach(pi => {
+                if (pi < 0 || pi >= n) return;
+                const px = xAt(pi);
+                const py = yAt(wave[pi]);
+
+                // Outer halo
+                const halo = ctx.createRadialGradient(px, py, 1, px, py, 7);
+                halo.addColorStop(0, 'rgba(30, 58, 95, 0.9)');
+                halo.addColorStop(1, 'rgba(30, 58, 95, 0)');
+                ctx.beginPath();
+                ctx.arc(px, py, 7, 0, Math.PI * 2);
+                ctx.fillStyle = halo;
+                ctx.fill();
+
+                // Dot
+                ctx.beginPath();
+                ctx.arc(px, py, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#1e3a5f';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(96,165,250,0.7)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+        }
+
+        // ── Baseline label ──
+        ctx.font = '9px monospace';
+        ctx.fillStyle = 'rgba(180,60,60,0.5)';
+        ctx.fillText('Norm. signal', 6, H - 4);
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 });
