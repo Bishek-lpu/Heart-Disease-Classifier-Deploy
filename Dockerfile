@@ -8,17 +8,15 @@ ENV PYTHONUNBUFFERED=1
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install system dependencies required for OpenCV and other scientific libraries
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Install performance dependencies
+RUN apt-get update
 
 # Copy only the requirements file first to leverage Docker cache for dependencies
 COPY requirements.txt .
 
-# Install the Python dependencies
-# We use --no-cache-dir to keep the image size as small as possible
-RUN pip install --no-cache-dir -r requirements.txt
+
+# RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=100 --retries=5 -r requirements.txt
 
 # Copy the rest of your application code into the container
 COPY . .
