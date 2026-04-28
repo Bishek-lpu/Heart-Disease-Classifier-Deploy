@@ -1,9 +1,38 @@
+# Git
 .git
 .gitignore
 .gitattributes
-venv/
+
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+env/
+
+# Environment variables
 .env
+*.env
+
+# OS files
 .DS_Store
-.*/
+Thumbs.db
+
+# Logs
+*.log
+
+# Build / cache
+*.egg-info/
+dist/
+build/
+
+# Node (if any frontend)
+node_modules/
+
+# IDEs
+.vscode/
+.idea/
