@@ -1,19 +1,15 @@
 import os
-
-os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
 import warnings
 import logging
 
+# ── Silence any lingering library noise ──────────────────────────────────────
 warnings.filterwarnings("ignore", category=UserWarning)
 logging.getLogger("absl").setLevel(logging.ERROR)
-logging.getLogger("tensorflow").setLevel(logging.ERROR)
 
 import numpy as np  # noqa: E402
 import cv2  # noqa: E402
-import tensorflow as tf  # noqa: E402
 import joblib  # noqa: E402
+import onnxruntime as ort  # noqa: E402
 from openai import OpenAI  # noqa: E402
 from io import BytesIO  # noqa: E402
 from scipy.signal import find_peaks  # noqa: E402
@@ -23,13 +19,25 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # noqa: E4
 from reportlab.lib.units import inch  # noqa: E402
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # noqa: E402
 
-# -------------------------------
-# LOAD MODELS
-# -------------------------------
-cnn_model = tf.keras.models.load_model("heart_ecg_cnn.h5")
-ml_model = joblib.load("heart_model.pkl")
-scaler = joblib.load("scaler.pkl")
+# ── ONNX Runtime session options (CPU, single-threaded for small containers) ──
+_sess_opts = ort.SessionOptions()
+_sess_opts.intra_op_num_threads = 2
+_sess_opts.inter_op_num_threads = 2
+_sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
+# ── Load models ───────────────────────────────────────────────────────────────
+_ONNX_MODEL_PATH = os.path.join(os.path.dirname(__file__), "heart_ecg_cnn.onnx")
+_cnn_session = ort.InferenceSession(
+    _ONNX_MODEL_PATH,
+    sess_options=_sess_opts,
+    providers=["CPUExecutionProvider"],
+)
+_cnn_input_name = _cnn_session.get_inputs()[0].name
+
+ml_model = joblib.load(os.path.join(os.path.dirname(__file__), "heart_model.pkl"))
+scaler = joblib.load(os.path.join(os.path.dirname(__file__), "scaler.pkl"))
+
+# ── Constants ─────────────────────────────────────────────────────────────────
 classes = ["Normal", "MI", "History_MI", "Abnormal"]
 
 CLINICAL_FEATURE_COLS = [
@@ -54,10 +62,9 @@ CLINICAL_FEATURE_COLS = [
 ]
 
 
+# ── AI suggestion ─────────────────────────────────────────────────────────────
 def get_ai_suggestion(input_type, data, result):
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-    model_name = "gpt-3.5-turbo"
-
     prompt = f"""
     You are an experienced cardiologist AI assistant. A patient has undergone heart disease analysis.
 
@@ -76,13 +83,15 @@ def get_ai_suggestion(input_type, data, result):
     """
     try:
         response = client.chat.completions.create(
-            model=model_name, messages=[{"role": "user", "content": prompt}]
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
         )
         return response.choices[0].message.content
     except Exception as e:
         return f"AI service error: {e!s}"
 
 
+# ── Clinical helpers ──────────────────────────────────────────────────────────
 def clinical_risk_percent_and_tier(input_scaled):
     try:
         if hasattr(ml_model, "predict_proba"):
@@ -121,6 +130,7 @@ def contributing_factors(age, sex, trestbps, chol, thalach, exang, oldpeak, cp):
     return f[:5]
 
 
+# ── Image / ECG helpers ───────────────────────────────────────────────────────
 def preprocess_image(img):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     img = img / 255.0
@@ -129,8 +139,11 @@ def preprocess_image(img):
 
 
 def predict_cnn(img):
-    cnn_input = img.reshape(1, 200, 240, 1)
-    pred = cnn_model.predict(cnn_input, verbose=0)
+    """Run inference via ONNX Runtime (no TensorFlow required)."""
+    # Shape: (1, 200, 240, 1), dtype float32
+    cnn_input = img.reshape(1, 200, 240, 1).astype(np.float32)
+    outputs = _cnn_session.run(None, {_cnn_input_name: cnn_input})
+    pred = outputs[0]  # shape (1, num_classes)
     class_id = int(np.argmax(pred))
     return classes[class_id], float(np.max(pred))
 
@@ -142,6 +155,7 @@ def waveform_analysis(img):
     return wave.tolist(), peaks.tolist(), len(peaks) * 6, float(np.std(wave))
 
 
+# ── PDF report ────────────────────────────────────────────────────────────────
 def _escape(s: str) -> str:
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 

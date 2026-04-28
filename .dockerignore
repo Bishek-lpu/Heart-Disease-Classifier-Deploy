@@ -14,7 +14,7 @@ venv/
 .env/
 env/
 
-# Environment variables
+# Environment variables (injected at runtime by the platform)
 .env
 *.env
 
@@ -36,3 +36,13 @@ node_modules/
 # IDEs
 .vscode/
 .idea/
+
+# ── Heavy model files not needed in the container ─────────────────────────────
+# The ONNX model (heart_ecg_cnn.onnx) IS needed; exclude only the old h5 file.
+heart_ecg_cnn.h5
+
+# One-time conversion script — not needed at runtime
+convert_to_onnx.py
+
+# README — not needed at runtime
+README.md

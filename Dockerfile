@@ -1,28 +1,60 @@
-# Use the official Python 3.11 slim image as the base
-FROM python:3.12-slim
+# ── Build stage: install dependencies ────────────────────────────────────────
+FROM python:3.11-slim AS builder
 
-# Set environment variables to prevent Python from writing .pyc files and buffer stdout/stderr
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Set the working directory inside the container
+WORKDIR /install
+
+# System libs needed to compile/link some wheels
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        gcc \
+        g++ \
+        libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install/packages -r requirements.txt
+
+
+# ── Runtime stage: lean final image ──────────────────────────────────────────
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
 WORKDIR /app
 
-# Install performance dependencies
-RUN apt-get update
+# Runtime-only system libraries (no compilers)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libgomp1 \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender1 \
+        libgl1 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy only the requirements file first to leverage Docker cache for dependencies
-COPY requirements.txt .
+# Copy installed packages from builder
+COPY --from=builder /install/packages /usr/local
 
-
-# RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir --default-timeout=100 --retries=5 -r requirements.txt
-
-# Copy the rest of your application code into the container
+# Copy application code (model files included; .h5 excluded via .dockerignore)
 COPY . .
 
-# Expose the port the app runs on
 EXPOSE 80
 
-# Run app using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "app:app"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:80/')" || exit 1
+
+# 2 workers × 2 threads is a good starting point for 512 MB RAM containers
+CMD ["gunicorn", \
+     "--bind", "0.0.0.0:80", \
+     "--workers", "2", \
+     "--threads", "2", \
+     "--timeout", "120", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "app:app"]

@@ -2,6 +2,9 @@ services:
   - type: web
     name: cardio-risk-assistant
     env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
     envVars:
       - key: OPENAI_API_KEY
         sync: false

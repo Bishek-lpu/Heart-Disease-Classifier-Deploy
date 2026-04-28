@@ -1,12 +1,23 @@
-python-dotenv==1.2.2
-openai==2.32.0
-numpy==2.4.4
-pandas==3.0.2
-opencv-python-headless==4.13.0.92
-Flask==3.1.3
-gunicorn==25.3.0
-scikit-learn==1.8.0
-scipy==1.17.1
-tensorflow-cpu==2.21.0
-joblib==1.5.3
-reportlab==4.4.10
+# ── Core web ──────────────────────────────────────────────────────────────────
+Flask==3.1.1
+gunicorn==23.0.0
+python-dotenv==1.0.1
+
+# ── AI / API ──────────────────────────────────────────────────────────────────
+openai==1.30.1
+
+# ── ML / Inference (onnxruntime replaces tensorflow-cpu, saves ~570 MB) ───────
+onnxruntime==1.21.0
+scikit-learn==1.5.2
+joblib==1.4.2
+numpy==1.26.4
+scipy==1.13.1
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+pandas==2.2.3
+
+# ── Image processing ──────────────────────────────────────────────────────────
+opencv-python-headless==4.10.0.84
+
+# ── Report generation ─────────────────────────────────────────────────────────
+reportlab==4.2.5
