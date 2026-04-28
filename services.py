@@ -1,4 +1,5 @@
 import os
+import gc
 import warnings
 import logging
 import numpy as np
@@ -44,8 +45,8 @@ def _get_cnn():
         import onnxruntime as ort  # ~30 MB, deferred
 
         opts = ort.SessionOptions()
-        opts.intra_op_num_threads = 2
-        opts.inter_op_num_threads = 2
+        opts.intra_op_num_threads = 1   # 1 thread = less memory on 512 MB hosts
+        opts.inter_op_num_threads = 1
         opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         path = os.path.join(os.path.dirname(__file__), "heart_ecg_cnn.onnx")
         _cnn_session = ort.InferenceSession(
@@ -88,9 +89,17 @@ def get_scaler():
 
 # ── AI suggestion (lazy-loads openai) ─────────────────────────────────────────
 def get_ai_suggestion(input_type, data, result):
-    from openai import OpenAI  # deferred: network client + httpx etc.
+    """Call OpenAI ChatGPT for a plain-English clinical summary."""
+    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        return (
+            "AI interpretation unavailable. Set OPENAI_API_KEY in your environment "
+            "or .env file (https://platform.openai.com/api-keys)."
+        )
 
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    from openai import OpenAI  # deferred: only loaded when AI summary is requested
+
+    client = OpenAI(api_key=api_key)
     prompt = f"""
     You are an experienced cardiologist AI assistant. A patient has undergone heart disease analysis.
 
@@ -111,6 +120,7 @@ def get_ai_suggestion(input_type, data, result):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
+            max_tokens=500,
         )
         return response.choices[0].message.content
     except Exception as e:
@@ -173,7 +183,10 @@ def predict_cnn(img):
     outputs = session.run(None, {input_name: cnn_input})
     pred = outputs[0]
     class_id = int(np.argmax(pred))
-    return _ECG_CLASSES[class_id], float(np.max(pred))
+    confidence = float(np.max(pred))
+    del cnn_input, outputs, pred   # free temporary arrays immediately
+    gc.collect()
+    return _ECG_CLASSES[class_id], confidence
 
 
 def waveform_analysis(img):
