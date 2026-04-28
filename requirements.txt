@@ -5,13 +5,14 @@ python-dotenv==1.0.1
 
 # ── AI / API ──────────────────────────────────────────────────────────────────
 openai==1.30.1
+httpx==0.24.1
 
 # ── ML / Inference (onnxruntime replaces tensorflow-cpu, saves ~570 MB) ───────
 onnxruntime==1.21.0
 scikit-learn==1.5.2
 joblib==1.4.2
 numpy==1.26.4
-scipy==1.13.1
+scipy==1.11.4
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 pandas==2.2.3

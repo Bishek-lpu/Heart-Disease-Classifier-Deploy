@@ -1,11 +1,11 @@
 import os
 import warnings
 import logging
+import numpy as np
 
 warnings.filterwarnings("ignore", category=UserWarning)
 logging.getLogger("absl").setLevel(logging.ERROR)
 
-import numpy as np  # always needed, fast
 
 # ── Constants (no heavy libs needed) ─────────────────────────────────────────
 CLINICAL_FEATURE_COLS = [

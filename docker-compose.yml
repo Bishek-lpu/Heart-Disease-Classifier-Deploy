@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   web:
-    image: bisheklpu/heart-disease-classifier:${IMAGE_TAG:-1.0.1}
+    image: bisheklpu/heart-disease-classifier:${IMAGE_TAG:-1.0.3}
     container_name: heart-disease-classifier
 
     build:
