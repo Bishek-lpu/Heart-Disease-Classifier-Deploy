@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: cardio-risk-assistant
+    env: docker
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false

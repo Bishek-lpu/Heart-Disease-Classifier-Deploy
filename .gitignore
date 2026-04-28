@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/*
+DATASET/*
+.venv/
+env/
+.env
+
+# Flask & Streamlit Secrets / Env Variables
+.env
+.streamlit/secrets.toml
+
+# Generated PDF Reports
+*.pdf
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Other caches and logs
+*.log
+.pytest_cache/
+
+# models
+*.h5
+*.pkl
+*.joblib

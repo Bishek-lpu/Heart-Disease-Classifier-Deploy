@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardio Risk Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="cl-header" style="position: relative;">
+            <a href="/" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: var(--text-muted); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.3s;"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Home</a>
+            <h1 class="cl-title">Cardio Risk Assistant <span class="glow-icon">🫀</span></h1>
+            <p class="cl-sub">Not a medical diagnosis — for educational and decision-support use only.</p>
+        </header>
+
+        <main>
+            <div class="tabs">
+                <button class="tab-btn active" data-target="clinical-tab">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                    Clinical Risk
+                </button>
+                <button class="tab-btn" data-target="ecg-tab">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    ECG Analysis
+                </button>
+            </div>
+
+            <div id="clinical-tab" class="tab-content active">
+                <div class="grid-layout">
+                    <div class="card form-card">
+                        <h2>Patient & Vitals</h2>
+                        <form id="clinical-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="age">Age <span class="tooltip" title="Patient age in years">ⓘ</span></label>
+                                    <input type="number" id="age" name="age" value="55" min="20" max="100">
+                                </div>
+                                <div class="form-group">
+                                    <label for="sex">Sex <span class="tooltip" title="Biological sex">ⓘ</span></label>
+                                    <select id="sex" name="sex">
+                                        <option value="0">Female</option>
+                                        <option value="1" selected>Male</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cp">Chest pain type <span class="tooltip" title="Type of chest pain reported">ⓘ</span></label>
+                                    <select id="cp" name="cp">
+                                        <option value="0">Typical angina</option>
+                                        <option value="1">Atypical angina</option>
+                                        <option value="2">Non-anginal pain</option>
+                                        <option value="3">Asymptomatic</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trestbps">Resting BP <span class="tooltip" title="Resting blood pressure in mm Hg">ⓘ</span></label>
+                                    <input type="number" id="trestbps" name="trestbps" value="120" min="80" max="200">
+                                </div>
+                                <div class="form-group">
+                                    <label for="chol">Cholesterol <span class="tooltip" title="Serum cholesterol in mg/dL">ⓘ</span></label>
+                                    <input type="number" id="chol" name="chol" value="200" min="100" max="600">
+                                </div>
+                                <div class="form-group">
+                                    <label for="fbs">Fasting blood sugar <span class="tooltip" title="> 120 mg/dl is high">ⓘ</span></label>
+                                    <select id="fbs" name="fbs">
+                                        <option value="0">≤120 mg/dL</option>
+                                        <option value="1">>120 mg/dL</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="restecg">Resting ECG <span class="tooltip" title="Resting electrocardiographic results">ⓘ</span></label>
+                                    <select id="restecg" name="restecg">
+                                        <option value="0">Normal</option>
+                                        <option value="1">ST-T Abnormality</option>
+                                        <option value="2">Hypertrophy</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="thalach">Max heart rate <span class="tooltip" title="Maximum heart rate achieved">ⓘ</span></label>
+                                    <input type="number" id="thalach" name="thalach" value="150" min="70" max="220">
+                                </div>
+                                <div class="form-group">
+                                    <label for="exang">Exercise angina <span class="tooltip" title="Exercise induced angina">ⓘ</span></label>
+                                    <select id="exang" name="exang">
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="oldpeak">ST depression <span class="tooltip" title="ST depression induced by exercise relative to rest">ⓘ</span></label>
+                                    <input type="number" step="0.1" id="oldpeak" name="oldpeak" value="1.0" min="0" max="6">
+                                </div>
+                                <div class="form-group">
+                                    <label for="slope">ST slope <span class="tooltip" title="The slope of the peak exercise ST segment">ⓘ</span></label>
+                                    <select id="slope" name="slope">
+                                        <option value="0">Upsloping</option>
+                                        <option value="1">Flat</option>
+                                        <option value="2">Downsloping</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ca">Vessels (0-4) <span class="tooltip" title="Number of major vessels colored by fluoroscopy">ⓘ</span></label>
+                                    <select id="ca" name="ca">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label for="thal">Thalassemia <span class="tooltip" title="Thalassemia blood disorder encoding">ⓘ</span></label>
+                                    <select id="thal" name="thal">
+                                        <option value="0">Normal</option>
+                                        <option value="1">Fixed Defect</option>
+                                        <option value="2">Reversable Defect</option>
+                                        <option value="3">Unknown</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn primary btn-glow">Run Prediction</button>
+                        </form>
+                    </div>
+
+                    <div class="card result-card">
+                        <h2>Analysis Results</h2>
+                        <div id="clinical-loading" class="hidden loading-container">
+                            <div class="spinner"></div>
+                            <p>Scoring and analyzing via OpenAI...</p>
+                        </div>
+                        <div id="clinical-results" class="hidden">
+                            <div class="metric-container">
+                                <div class="metric">
+                                    <label>Disease risk score</label>
+                                    <span class="value" id="c-risk-score">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="c-progress"></div>
+                                </div>
+                                <div id="c-badge" class="risk-badge"></div>
+                            </div>
+
+                            <div class="classification-box">
+                                <strong>Model Classification</strong>
+                                <p id="c-classification" class="highlight-text"></p>
+                            </div>
+
+                            <div class="accordion">
+                                <details open>
+                                    <summary>Key Contributing Factors</summary>
+                                    <ul id="c-factors" class="custom-list"></ul>
+                                </details>
+                            </div>
+
+                            <div class="accordion">
+                                <details open>
+                                    <summary>AI Brief <span class="disclaimer-badge">Support Only</span></summary>
+                                    <p id="c-ai-brief" class="ai-text"></p>
+                                </details>
+                            </div>
+                            
+                            <div id="c-contact" class="hidden alert-box error" style="margin-top: 1.5rem;"></div>
+
+                            <button id="c-download" class="btn secondary outline-glow">Download PDF Report</button>
+                        </div>
+                        
+                        <div id="clinical-placeholder" class="placeholder-state">
+                            <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--text-muted)" stroke-width="1.5" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                            <p>Enter patient data and click "Run Prediction" to see the risk analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ecg-tab" class="tab-content">
+                <div class="grid-layout">
+                    <div class="card form-card">
+                        <h2>Upload ECG Strip</h2>
+                        <form id="ecg-form">
+                            <div class="upload-area" id="upload-zone">
+                                <input type="file" id="ecg-file" name="file" accept=".jpg,.png,.jpeg" required>
+                                <svg viewBox="0 0 24 24" width="40" height="40" stroke="var(--primary)" stroke-width="1.5" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                <p>Drag & drop or click to select<br><span class="sub-text">Supports JPG, PNG</span></p>
+                            </div>
+                            <div class="image-preview" id="image-preview-container" style="display: none;">
+                                <img id="image-preview" src="" alt="ECG Preview">
+                            </div>
+                            <div class="btn-group">
+                                <button type="submit" class="btn primary btn-glow" id="ecg-submit-btn" disabled>Analyze ECG Image</button>
+                                <button type="button" class="btn outline" id="ecg-reset-btn">Clear</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card result-card">
+                        <h2>Analysis Results</h2>
+                        <div id="ecg-loading" class="hidden loading-container">
+                            <div class="spinner"></div>
+                            <p>Running CNN inference & OpenAI analysis...</p>
+                        </div>
+                        <div id="ecg-results" class="hidden">
+                            <div class="metrics-row">
+                                <div class="metric">
+                                    <label>Predicted Class</label>
+                                    <span class="value" id="e-class"></span>
+                                </div>
+                                <div class="metric">
+                                    <label>Confidence</label>
+                                    <span class="value" id="e-conf"></span>
+                                </div>
+                            </div>
+                            
+                            <div id="e-alert" class="alert-box"></div>
+
+                            <div class="waveform-box">
+                                <strong>Projected 1D Waveform (Heuristic)</strong>
+                                <div class="stats-grid">
+                                    <div class="stat">
+                                        <span class="stat-label">Est. Heart Rate</span>
+                                        <span class="stat-val"><strong id="e-hr"></strong> bpm</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Signal Spread</span>
+                                        <span class="stat-val" id="e-var"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion">
+                                <details open>
+                                    <summary>AI Brief <span class="disclaimer-badge">Support Only</span></summary>
+                                    <p id="e-ai-brief" class="ai-text"></p>
+                                </details>
+                            </div>
+                            
+                            <div id="e-contact" class="hidden alert-box error" style="margin-top: 1.5rem;"></div>
+
+                            <button id="e-download" class="btn secondary outline-glow">Download PDF Report</button>
+                        </div>
+                        
+                        <div id="ecg-placeholder" class="placeholder-state">
+                            <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--text-muted)" stroke-width="1.5" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                            <p>Upload an ECG image strip to process CNN classification.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/app.js"></script>
+</body>
+</html>
