@@ -68,7 +68,7 @@ def predict_clinical():
         scaler   = get_scaler()
         ml_model = get_ml_model()
 
-        input_scaled = scaler.transform(input_df)
+        input_scaled = scaler.transform(input_df) # type: ignore
         pred = int(ml_model.predict(input_scaled)[0])
         result_label = (
             "Likely heart disease"
